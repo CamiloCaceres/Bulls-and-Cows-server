@@ -3,15 +3,18 @@ from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
 
-from models import User as UserModel
-from schemas import User as UserSchema, UserCreate
+
+from app.auth.models import User as UserModel
+from app.auth.schemas import User as UserSchema, UserCreate
 
 SECRET_KEY = "mysecretkey"
 EXPIRE_MINUTES = 60 * 24
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+bcrypt_context = CryptContext(schemes=["bcrypt"])
 
 
 # check existing user with same username or email
@@ -49,4 +52,12 @@ async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
     except JWTError:
         return None
     
-    
+async def create_user(db: Session, user: UserCreate):
+    db_user = UserModel(
+        username = user.username,
+        email = user.email,
+        hashed_password = bcrypt_context.hash(user.password)
+    )
+    db.add(db_user)
+    db.commit()
+    return db_user
