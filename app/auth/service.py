@@ -61,3 +61,11 @@ async def create_user(db: Session, user: UserCreate):
     db.add(db_user)
     db.commit()
     return db_user
+
+async def authenticate(db: Session, username: str, password: str):
+    db_user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not db_user:
+        return None
+    if not bcrypt_context.verify(password, db_user.hashed_password):
+        return None
+    return db_user
