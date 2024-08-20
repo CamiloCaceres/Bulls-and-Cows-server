@@ -31,7 +31,7 @@ async def existing_user(db: Session, username: str, email: str):
 # jwt = {encoded data, secret key, algorithm}
 async def create_access_token(id: int, username: str):
     encode = {"sub": username, "id": id}
-    expires = datetime.now(datetime.UTC) + timedelta(minutes=EXPIRE_MINUTES)
+    expires = datetime.now() + timedelta(minutes=EXPIRE_MINUTES)
     encode.update({"exp": expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
